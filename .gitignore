@@ -2,3 +2,5 @@ bin
 obj
 *.suo
 TestResults
+_UpgradeReport_Files/*
+Backup/*
