@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Web.Mvc;
 using System.Web.Routing;
 using MvcIntegrationTestFramework.Hosting;
@@ -81,11 +80,27 @@ namespace MvcIntegrationTestFramework {
           response.StatusCode = result.Response.StatusCode;
           response.ResponseText = result.ResponseText;
           var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
-          result.Response.Headers.AllKeys.Select(x => query[x] = result.Response.Headers[x]);
+
+          var _customHeaders = GetPrivateInstanceField<System.Collections.ArrayList>(result.Response, "_customHeaders");
+          foreach (var hdr in _customHeaders) {
+            var name = GetPrivateInstanceProperty<string>(hdr, "Name");
+            var value = GetPrivateInstanceProperty<string>(hdr, "Value");
+            query[name] = value;
+          }
+
           response.RawHeaders = query.ToString();
         });
 
       return response;
+    }
+
+    private static T GetPrivateInstanceField<T>(object obj, string name) {
+      var field = obj.GetType().GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+      return (T)field.GetValue(obj);
+    }
+    private static T GetPrivateInstanceProperty<T>(object obj, string name) {
+      var field = obj.GetType().GetProperty(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+      return (T)field.GetValue(obj, null);
     }
 
     protected Response Get(string path) {
