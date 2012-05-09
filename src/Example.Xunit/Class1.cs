@@ -1,24 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MvcIntegrationTestFramework;
 using Xunit;
 
-namespace Example.Xunit
-{
-    public class SampleXunitTest : MvcIntegrationTestFramework.MvcControllerTest
-    {
-        public SampleXunitTest() 
-        {
-            InitializeAspNetRuntime();
-
-            Get("home/index");
-        }
-
-        [Fact]
-        public void Should_be_successful() 
-        {
-            Assert.Equal(200,Response.StatusCode);
-        }
+namespace Example.Xunit {
+  public class SampleXunitTest {
+    [Fact]
+    public void Should_be_successful() {
+      var browser = new Browser();
+      var result = browser.Get("home/index");
+      Assert.Equal(200, result.StatusCode);
     }
+  }
 }

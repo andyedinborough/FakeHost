@@ -90,7 +90,7 @@
     <Compile Include="Interception\LastRequestData.cs" />
     <Compile Include="Browsing\BrowsingSession.cs" />
     <Compile Include="Hosting\AppHost.cs" />
-    <Compile Include="MvcIntegrationTest.cs" />
+    <Compile Include="Browser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Browsing\RequestResult.cs" />
   </ItemGroup>
