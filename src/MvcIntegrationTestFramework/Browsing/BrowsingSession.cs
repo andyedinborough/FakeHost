@@ -44,7 +44,7 @@ namespace MvcIntegrationTestFramework.Browsing {
       LastRequestData.Reset();
       var output = new StringWriter();
       string httpVerbName = httpVerb.ToString().ToLower();
-      var workerRequest = new SimulatedWorkerRequest(url, query, output, Cookies, httpVerbName, formValues ?? new NameValueCollection(), headers);
+      var workerRequest = new SimulatedWorkerRequest(url, query, output, Cookies, httpVerbName, formValues, headers);
       HttpRuntime.ProcessRequest(workerRequest);
 
       // Capture the output
