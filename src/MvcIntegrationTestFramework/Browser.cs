@@ -1,14 +1,20 @@
 using System;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using MvcIntegrationTestFramework.Hosting;
 
 namespace MvcIntegrationTestFramework {
-  public class Browser {
+  public class Browser : IDisposable {
     private static object @lock = new object();
     private static AppHost _appHost;
+
+    public Browser() {
+      Cookies = new HttpCookieCollection();
+    }
 
     private static bool IsInitialized() {
       return _appHost != null;
@@ -25,7 +31,7 @@ namespace MvcIntegrationTestFramework {
     /// <remarks>
     /// Has been known to cause severe damage to your immortal soul.
     /// </remarks>
-    protected static void InitializeAspNetRuntime(string pathToYourWebProject = null, string virtualPath = null, string hostname = null) {
+    public static void InitializeAspNetRuntime(string pathToYourWebProject = null, string virtualPath = null, string hostname = null) {
       if (_appHost == null)
         lock (@lock)
           if (_appHost == null) {
@@ -51,6 +57,18 @@ namespace MvcIntegrationTestFramework {
           }
     }
 
+    public HttpCookieCollection Cookies { get; internal set; }
+
+    [NonSerialized]
+    private System.Net.WebHeaderCollection _Headers = new System.Net.WebHeaderCollection();
+    public System.Net.WebHeaderCollection Headers {
+      get { return _Headers; }
+    }
+
+    public void AppendHeader(string name, string value) {
+      Headers.Add(name, value);
+    }
+
     /// <summary>
     /// Sends a post to your url.  
     /// </summary>
@@ -71,21 +89,26 @@ namespace MvcIntegrationTestFramework {
     /// });
     /// </code>
     /// </example>
-    protected Response Send(string url, object formData = null, HttpVerbs method = HttpVerbs.Get, System.Web.HttpCookie[] cookies = null) {
+    protected Response Send(string url, object formData = null, HttpVerbs method = HttpVerbs.Get) {
       var response = new Response();
       var formNameValueCollection = formData == null ? null : ConvertFromObject(formData);
+      var headerCollection = System.Web.HttpUtility.ParseQueryString(string.Empty);
+      foreach (string header in Headers) {
+        headerCollection[header] = Headers[header];
+      }
+
+      var cookies = SerializableCookie.GetCookies(Cookies);
 
       lock (_appHost)
         _appHost.SimulateBrowsingSession(browser => {
-          if (cookies != null)
-            foreach (var cookie in cookies)
-              browser.Cookies.Add(cookie);
+          SerializableCookie.Update(browser.Cookies, cookies);
 
-          var result = browser.ProcessRequest(url, method, formNameValueCollection);
+          var result = browser.ProcessRequest(url, method, formNameValueCollection, headerCollection);
           response.StatusCode = result.Response.StatusCode;
           response.ResponseText = result.ResponseText;
-          var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
+          response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
 
+          var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
           var _customHeaders = GetPrivateInstanceField<System.Collections.ArrayList>(result.Response, "_customHeaders");
           foreach (var hdr in _customHeaders) {
             var name = GetPrivateInstanceProperty<string>(hdr, "Name");
@@ -95,6 +118,8 @@ namespace MvcIntegrationTestFramework {
 
           response.RawHeaders = query.ToString();
         });
+
+      SerializableCookie.Update(Cookies, response._SerializableCookies);
 
       return response;
     }
@@ -111,33 +136,17 @@ namespace MvcIntegrationTestFramework {
     public Response Get(string path) {
       return Send(path);
     }
-    public Response Get(string path, System.Web.HttpCookie[] cookies ) {
-      return Send(path, cookies: cookies);
-    }
-
-    public Response Post(string path, string data, System.Web.HttpCookie[] cookies  ) {
-      return Send(path, data, HttpVerbs.Post, cookies: cookies);
-    }
 
     public Response Post(string path, NameValueCollection data) {
-      return Post(path, data, null);
-    }
-    public Response Post(string path, NameValueCollection data, System.Web.HttpCookie[] cookies  ) {
-      return Send(path, data, HttpVerbs.Post, cookies: cookies);
+      return Post(path, data);
     }
 
-    public Response Post(string path, XHTMLr.Form data ) {
-      return Post(path, data, null);
-    }
-    public Response Post(string path, XHTMLr.Form data, System.Web.HttpCookie[] cookies ) {
-      return Send(path, data.ToString(), HttpVerbs.Post, cookies: cookies);
+    public Response Post(string path, XHTMLr.Form data) {
+      return Post(path, data);
     }
 
-    public Response Post(string path, object data ) {
-      return Post(path, data, null);
-    }
-    public Response Post(string path, object data, System.Web.HttpCookie[] cookies) {
-      return Send(path, data, HttpVerbs.Post, cookies: cookies);
+    public Response Post(string path, object data) {
+      return Post(path, data);
     }
 
     public static NameValueCollection ConvertFromObject(object anonymous) {
@@ -161,6 +170,56 @@ namespace MvcIntegrationTestFramework {
       }
       return form;
     }
+
+    public void Dispose() {
+
+    }
+  }
+
+  [Serializable]
+  public class SerializableCookie {
+    public string Name { get; set; }
+    public string Value { get; set; }
+    public string Domain { get; set; }
+    public DateTime Expires { get; set; }
+    public bool HttpOnly { get; set; }
+    public string Path { get; set; }
+    public NameValueCollection Values { get; set; }
+
+    public SerializableCookie() { }
+    public SerializableCookie(System.Web.HttpCookie cookie) {
+      Name = cookie.Name;
+      Value = cookie.Value;
+      Domain = cookie.Domain;
+      Expires = cookie.Expires;
+      HttpOnly = cookie.HttpOnly;
+      Path = cookie.Path;
+      Values = cookie.Values;
+    }
+
+    public static SerializableCookie[] GetCookies(HttpCookieCollection cookies) {
+      return cookies.AllKeys
+         .Select(x => cookies[x])
+         .Where(x => x != null)
+         .Select(x => new SerializableCookie(x))
+         .ToArray();
+    }
+
+    public static void Update(HttpCookieCollection cookies, SerializableCookie[] serializableCookies) {
+      cookies.Clear();
+      foreach (var cookie in serializableCookies)
+        cookies.Set(cookie);
+    }
+
+    public static implicit operator System.Web.HttpCookie(SerializableCookie cookie) {
+      var _cookie = new HttpCookie(cookie.Name, cookie.Value);
+      _cookie.Domain = cookie.Domain;
+      _cookie.Expires = cookie.Expires;
+      _cookie.HttpOnly = cookie.HttpOnly;
+      _cookie.Path = cookie.Path;
+      cookie.Values.AllKeys.Select(x => _cookie.Values[x] = cookie.Values[x]);
+      return _cookie;
+    }
   }
 
   /// <summary>
@@ -170,6 +229,20 @@ namespace MvcIntegrationTestFramework {
   public class Response : MarshalByRefObject {
     public int StatusCode { get; set; }
     public string ResponseText { get; set; }
+
+    internal SerializableCookie[] _SerializableCookies { get; set; }
+
+    [NonSerialized]
+  private  System.Web.HttpCookieCollection _Cookies;
+    public System.Web.HttpCookieCollection Cookies {
+      get {
+        if (_Cookies == null) {
+          _Cookies = new HttpCookieCollection();
+          SerializableCookie.Update(_Cookies, _SerializableCookies);
+        }
+        return _Cookies;
+      }
+    }
 
     [NonSerialized]
     private System.Net.WebHeaderCollection _Headers;
