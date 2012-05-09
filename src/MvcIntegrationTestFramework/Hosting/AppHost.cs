@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
-using System.Web.Mvc;
 using MvcIntegrationTestFramework.Browsing;
 using MvcIntegrationTestFramework.Interception;
 
@@ -13,7 +11,7 @@ namespace MvcIntegrationTestFramework.Hosting {
   /// Hosts an ASP.NET application within an ASP.NET-enabled .NET appdomain
   /// and provides methods for executing test code within that appdomain
   /// </summary>
-  public class AppHost {
+  internal class AppHost {
     private readonly AppDomainProxy appDomainProxy; // The gateway to the ASP.NET-enabled .NET appdomain
 
     public AppHost(string appPhysicalDirectory)
@@ -21,19 +19,12 @@ namespace MvcIntegrationTestFramework.Hosting {
     }
 
     public AppHost(string appPhysicalDirectory, string virtualDirectory) {
-      try {
-        appDomainProxy = (AppDomainProxy)ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
-      } catch (FileNotFoundException ex) {
-        if ((ex.Message != null) && ex.Message.Contains("MvcIntegrationTestFramework"))
-          throw new InvalidOperationException("Could not load MvcIntegrationTestFramework.dll within a bin directory under " + appPhysicalDirectory + ". Is this the path to your ASP.NET MVC application, and have you set up a post-build event to copy your test assemblies and their dependencies to this folder? See the demo project for an example.");
-        throw;
-      }
+      appDomainProxy = (AppDomainProxy)ApplicationHost.CreateApplicationHost(typeof(AppDomainProxy), virtualDirectory, appPhysicalDirectory);
 
       appDomainProxy.RunCodeInAppDomain(() => {
         InitializeApplication();
-        //AttachTestControllerDescriptorsForAllControllers();
         var filters = System.Web.Mvc.GlobalFilters.Filters;
-        filters.Add(new InterceptionFilter(), 0);
+        filters.Add(new InterceptionFilter(), int.MaxValue);
         LastRequestData.Reset();
       });
     }

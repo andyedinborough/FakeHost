@@ -80,13 +80,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Browsing\MvcUtils.cs" />
+    <Compile Include="Browsing\Response.cs" />
+    <Compile Include="Browsing\SerializableCookie.cs" />
     <Compile Include="Browsing\SimulatedWorkerRequest.cs" />
     <Compile Include="Hosting\AppDomainProxy.cs" />
     <Compile Include="Hosting\SerializableDelegate.cs" />
     <Compile Include="Interception\InterceptionFilter.cs" />
-    <Compile Include="Interception\InterceptionFilterActionDescriptor.cs" />
-    <Compile Include="Interception\InterceptionFilterControllerDescriptor.cs" />
     <Compile Include="Interception\LastRequestData.cs" />
     <Compile Include="Browsing\BrowsingSession.cs" />
     <Compile Include="Hosting\AppHost.cs" />

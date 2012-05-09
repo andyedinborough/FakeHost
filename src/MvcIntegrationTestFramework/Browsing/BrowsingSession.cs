@@ -7,7 +7,7 @@ using System.Web.SessionState;
 using MvcIntegrationTestFramework.Interception;
 
 namespace MvcIntegrationTestFramework.Browsing {
-  public class BrowsingSession {
+  internal class BrowsingSession {
     public HttpSessionState Session { get; private set; }
     public HttpCookieCollection Cookies { get; private set; }
 

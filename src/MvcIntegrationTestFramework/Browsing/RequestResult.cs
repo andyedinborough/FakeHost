@@ -6,7 +6,7 @@ namespace MvcIntegrationTestFramework.Browsing
     /// <summary>
     /// Represents the result of a simulated request
     /// </summary>
-    public class RequestResult
+    internal class RequestResult
     {
         public HttpResponse Response { get; set; }
         public string ResponseText { get; set; }
