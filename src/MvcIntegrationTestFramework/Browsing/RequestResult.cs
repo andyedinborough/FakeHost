@@ -1,7 +1,7 @@
 using System.Web;
 using System.Web.Mvc;
 
-namespace MvcIntegrationTestFramework.Browsing {
+namespace FakeHost.Browsing {
   /// <summary>
   /// Represents the result of a simulated request
   /// </summary>

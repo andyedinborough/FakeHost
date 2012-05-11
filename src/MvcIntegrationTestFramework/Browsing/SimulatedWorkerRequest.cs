@@ -6,7 +6,7 @@ using System.Text;
 using System.Web;
 using System.Web.Hosting;
 
-namespace MvcIntegrationTestFramework.Browsing {
+namespace FakeHost.Browsing {
   internal class SimulatedWorkerRequest : SimpleWorkerRequest {
     private HttpCookieCollection _Cookies;
     private readonly string _HttpVerbName;

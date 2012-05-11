@@ -4,9 +4,9 @@ using System.IO;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.SessionState;
-using MvcIntegrationTestFramework.Interception;
+using FakeHost.Interception;
 
-namespace MvcIntegrationTestFramework.Browsing {
+namespace FakeHost.Browsing {
   internal class BrowsingSession {
     public HttpSessionState Session { get; private set; }
     public HttpCookieCollection Cookies { get; private set; }

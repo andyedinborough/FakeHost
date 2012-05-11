@@ -3,10 +3,10 @@ using System.IO;
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
-using MvcIntegrationTestFramework.Browsing;
-using MvcIntegrationTestFramework.Interception;
+using FakeHost.Browsing;
+using FakeHost.Interception;
 
-namespace MvcIntegrationTestFramework.Hosting {
+namespace FakeHost.Hosting {
   /// <summary>
   /// Hosts an ASP.NET application within an ASP.NET-enabled .NET appdomain
   /// and provides methods for executing test code within that appdomain

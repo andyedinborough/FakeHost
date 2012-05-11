@@ -2,7 +2,7 @@
 using System.Web.Mvc;
 using System.Web.SessionState;
 
-namespace MvcIntegrationTestFramework.Interception {
+namespace FakeHost.Interception {
   /// <summary>
   /// A place to store information about each request as we capture it
   /// Static because HttpRuntime.ProcessRequest() exposes no convenient hooks for intercepting the

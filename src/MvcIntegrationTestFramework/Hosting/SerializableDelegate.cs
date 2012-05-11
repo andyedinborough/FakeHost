@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace MvcIntegrationTestFramework.Hosting {
+namespace FakeHost.Hosting {
   /// <summary>
   /// Makes delegates serializable where possible
   /// Used to pass test delegates from the test appdomain into the ASP.NET host appdomain

@@ -1,44 +1,25 @@
-This project aims to provide functional controller tests to asp.net applications
+Integration testing ASP.NET MVC is messy. *FakeHost* aims to help.
 
-98% of the work in it came from Steve Sanderson http://blog.stevensanderson.com/2009/06/11/integration-testing-your-aspnet-mvc-application/
+The code has been forked and updated to make setup simpler:
 
-I couldn't find anywhere that the code was hosted, so I am putting it out here on github and have added some things to make it feel a little more like rails.
 
-  /// <summary>
-    /// Summary description for UnitTest1
-    /// </summary>
-    [TestClass]
-    public class UnitTest1 : MvcIntegrationTestFramework.MvcControllerTest
-    {
-        public UnitTest1()
-        {
-            //
-            // TODO: Add constructor logic here
-            //
-        }
+```
+[TestMethod]
+public void TestLogin() {
+  
+  using (var browser = new Browser()) {
+    var form = browser
+      .Get("/account/logon")
+      .GetForms()[0];
 
-        [TestInitialize]
-        public void Setup() 
-        {
-            InitializeAspNetRuntime();
 
-            Get("home/index");
-        }
+    form["email"] = "andy.edinborough@gmail.com";
+    form["password"]  = "sUp3r1337&hX0rPr0of";
 
-        [TestMethod]
-        public void TestMethod1()
-        {
-            Assert.AreEqual(200,Response.StatusCode);
-        }
-    }
-    
-    
-      Post("registration/create", new
-            {
-                Form = new
-                {
-                    Email = "yogibear@jellystone.forest",
-                    Password = "welcome",
-                    ConfirmPassword = "welcome"
-                }
-            });
+    var result = browser.Post("/account/logon", form);
+      
+    Assert.AreEqual(302, result.StatusCode);
+  }
+
+}
+``` 

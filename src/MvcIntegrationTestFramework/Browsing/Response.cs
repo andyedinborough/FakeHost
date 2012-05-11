@@ -2,7 +2,7 @@
 using System.Net;
 using System.Web;
 
-namespace MvcIntegrationTestFramework.Browsing {
+namespace FakeHost.Browsing {
   /// <summary>
   /// Use this to get data back to the test
   /// </summary>

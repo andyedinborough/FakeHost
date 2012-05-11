@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-namespace MvcIntegrationTestFramework.Browsing {
+namespace FakeHost.Browsing {
   [Serializable]
   internal class SerializableCookie {
     public string Name { get; set; }

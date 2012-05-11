@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>FakeHost</id>
+    <version>#version#</version>
+    <authors>Steve Sanderson, Chris Ortman, Andy Edinborough</authors>
+    <description>Creates a hosting environment for ASP.NET MVC to execute integration tests against.</description>
+    <language>en-US</language>
+    <licenseUrl>http://andyedinborough.mit-license.org/</licenseUrl>
+    <projectUrl>https://github.com/andyedinborough/FakeHost</projectUrl>
+    <releaseNotes><![CDATA[#message#]]></releaseNotes>
+  </metadata>
+</package>

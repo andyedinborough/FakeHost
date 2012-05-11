@@ -1,7 +1,7 @@
 ﻿using System;
-using MvcIntegrationTestFramework.Browsing;
+using FakeHost.Browsing;
 
-namespace MvcIntegrationTestFramework.Hosting {
+namespace FakeHost.Hosting {
   /// <summary>
   /// Simply provides a remoting gateway to execute code within the ASP.NET-hosting appdomain
   /// </summary>

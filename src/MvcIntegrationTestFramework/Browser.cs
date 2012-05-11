@@ -4,10 +4,10 @@ using System.IO;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-using MvcIntegrationTestFramework.Browsing;
-using MvcIntegrationTestFramework.Hosting;
+using FakeHost.Browsing;
+using FakeHost.Hosting;
 
-namespace MvcIntegrationTestFramework {
+namespace FakeHost {
   public class Browser : IDisposable {
     private static object @lock = new object();
     private static AppHost _appHost;
@@ -43,7 +43,7 @@ namespace MvcIntegrationTestFramework {
               }
             }
 
-            var ourDll0 = new Uri(typeof(MvcIntegrationTestFramework.Browser).Assembly.Location).LocalPath;
+            var ourDll0 = new Uri(typeof(FakeHost.Browser).Assembly.Location).LocalPath;
             var ourDll1 = Path.Combine(pathToYourWebProject, "bin", System.IO.Path.GetFileName(ourDll0));
             File.Copy(ourDll0, ourDll1, true);
 

@@ -49,9 +49,9 @@
     <Compile Include="UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MvcIntegrationTestFramework\MvcIntegrationTestFramework.csproj">
+    <ProjectReference Include="..\MvcIntegrationTestFramework\FakeHost.csproj">
       <Project>{4036AFF9-698B-463D-BE26-05D2CE3E2ABD}</Project>
-      <Name>MvcIntegrationTestFramework</Name>
+      <Name>FakeHost</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

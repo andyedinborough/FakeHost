@@ -1,4 +1,4 @@
-﻿using MvcIntegrationTestFramework;
+﻿using FakeHost;
 using Xunit;
 
 namespace Example.Xunit {
