@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.MsTest", "src\Examp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Xunit", "src\Example.Xunit\Example.Xunit.csproj", "{C8F14659-708B-4DB3-B244-D1BD40D3435A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSite", "TestSite\TestSite.csproj", "{0836CEE3-B171-445A-842F-F7F553B422BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSite", "src\TestSite\TestSite.csproj", "{0836CEE3-B171-445A-842F-F7F553B422BC}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution

@@ -113,7 +113,9 @@
   <ItemGroup>
     <None Include="Create-Package.ps1" />
     <None Include="packages.config" />
-    <None Include="FakeHost.nuspec" />
+    <None Include="FakeHost.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

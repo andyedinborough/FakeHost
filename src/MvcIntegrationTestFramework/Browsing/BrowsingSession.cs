@@ -25,30 +25,32 @@ namespace FakeHost.Browsing {
 
     public RequestResult ProcessRequest(Uri uri, HttpVerbs httpVerb, NameValueCollection formValues, NameValueCollection headers) {
       if (uri == null) throw new ArgumentNullException("url");
-       
+
       // Perform the request
       LastRequestData.Reset();
       var output = new StringWriter();
       string httpVerbName = httpVerb.ToString().ToLower();
       var workerRequest = new SimulatedWorkerRequest(uri, output, Cookies, httpVerbName, formValues, headers);
+      var ctx = HttpContext.Current = new HttpContext(workerRequest);
       HttpRuntime.ProcessRequest(workerRequest);
+      var response = ctx.Response;
 
       // Capture the output
-      AddAnyNewCookiesToCookieCollection();
-      Session = LastRequestData.HttpSessionState;
+      AddAnyNewCookiesToCookieCollection(response);
+      Session = ctx.Session;
       return new RequestResult {
         ResponseText = output.ToString(),
         ActionExecutedContext = LastRequestData.ActionExecutedContext,
         ResultExecutedContext = LastRequestData.ResultExecutedContext,
-        Response = LastRequestData.Response,
+        Response = response ?? LastRequestData.Response,
       };
     }
 
-    private void AddAnyNewCookiesToCookieCollection() {
-      if (LastRequestData.Response == null)
-        return;
+    private void AddAnyNewCookiesToCookieCollection(HttpResponse response) {
+      response = LastRequestData.Response ?? response;
+      if (response == null) return;
 
-      HttpCookieCollection lastResponseCookies = LastRequestData.Response.Cookies;
+      var lastResponseCookies = response.Cookies;
       if (lastResponseCookies == null)
         return;
 

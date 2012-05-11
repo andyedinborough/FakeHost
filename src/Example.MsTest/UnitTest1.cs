@@ -1,9 +1,5 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿using FakeHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FakeHost;
 
 namespace Example.MsTest {
   /// <summary>
@@ -14,7 +10,7 @@ namespace Example.MsTest {
     [TestMethod]
     public void TestMethod1() {
       var browser = new Browser();
-      var result = browser.Get("home/index");
+      var result = browser.Get("/");
       Assert.AreEqual(200, result.StatusCode);
     }
   }
