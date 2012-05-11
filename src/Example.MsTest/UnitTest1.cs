@@ -10,8 +10,9 @@ namespace Example.MsTest {
     [TestMethod]
     public void TestMethod1() {
       var browser = new Browser();
-      var result = browser.Get("/");
+      var result = browser.Get("/?test=success");
       Assert.AreEqual(200, result.StatusCode);
+      Assert.AreEqual(true, result.ResponseText.Contains("success"));
     }
   }
 }

@@ -14,12 +14,10 @@ namespace FakeHost.Browsing {
     private readonly NameValueCollection _Headers;
     private Uri _Uri;
 
-    public override string GetServerName() {
-      return _Uri.Host;
-    }
+    public override string GetServerName() { return _Uri.Host; }
 
     public SimulatedWorkerRequest(Uri uri, TextWriter output, HttpCookieCollection cookies, string httpVerbName, NameValueCollection formValues, NameValueCollection headers)
-      : base(uri.AbsolutePath, uri.Query, output) {
+      : base(uri.AbsolutePath.TrimStart('/'), uri.Query.TrimStart('?'), output) {
       _Uri = uri;
       _Cookies = cookies;
       _HttpVerbName = httpVerbName;

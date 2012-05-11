@@ -24,13 +24,16 @@ namespace FakeHost.Browsing {
     }
 
     public RequestResult ProcessRequest(Uri uri, HttpVerbs httpVerb, NameValueCollection formValues, NameValueCollection headers) {
+      return ProcessRequest(uri, httpVerb.ToString(), formValues, headers);
+    }
+    public RequestResult ProcessRequest(Uri uri, string httpVerb, NameValueCollection formValues, NameValueCollection headers) {
       if (uri == null) throw new ArgumentNullException("url");
 
       // Perform the request
       LastRequestData.Reset();
       var output = new StringWriter();
-      string httpVerbName = httpVerb.ToString().ToLower();
-      var workerRequest = new SimulatedWorkerRequest(uri, output, Cookies, httpVerbName, formValues, headers);
+      httpVerb = (httpVerb ?? "GET").ToUpper();
+      var workerRequest = new SimulatedWorkerRequest(uri, output, Cookies, httpVerb, formValues, headers);
       var ctx = HttpContext.Current = new HttpContext(workerRequest);
       HttpRuntime.ProcessRequest(workerRequest);
       var response = ctx.Response;
