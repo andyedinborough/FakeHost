@@ -9,5 +9,8 @@
     <licenseUrl>http://andyedinborough.mit-license.org/</licenseUrl>
     <projectUrl>https://github.com/andyedinborough/FakeHost</projectUrl>
     <releaseNotes><![CDATA[#message#]]></releaseNotes>
+    <dependencies>
+      <dependency id="XHTMLr" version="1.0.1" />
+    </dependencies>
   </metadata>
 </package>
