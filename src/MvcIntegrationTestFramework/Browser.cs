@@ -59,6 +59,8 @@ namespace MvcIntegrationTestFramework {
       get { return _Headers; }
     }
 
+    public string Host { get; set; }
+
     public void AppendHeader(string name, string value) {
       Headers.Add(name, value);
     }
@@ -92,12 +94,13 @@ namespace MvcIntegrationTestFramework {
       }
 
       var cookies = SerializableCookie.GetCookies(Cookies);
+      url =  new Uri(new Uri("http://" + (Host ?? "localhost")), url).ToString();
 
       lock (@lock)
         _appHost.SimulateBrowsingSession(browser => {
           SerializableCookie.Update(browser.Cookies, cookies);
 
-          var result = browser.ProcessRequest(url, method, formNameValueCollection, headerCollection);
+          var result = browser.ProcessRequest(new Uri(url), method, formNameValueCollection, headerCollection);
           response.StatusCode = result.Response.StatusCode;
           response.ResponseText = result.ResponseText;
           response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
@@ -132,15 +135,15 @@ namespace MvcIntegrationTestFramework {
     }
 
     public Response Post(string path, NameValueCollection data) {
-      return Post(path, data);
+      return Post(path, (object)data);
     }
 
     public Response Post(string path, XHTMLr.Form data) {
-      return Post(path, data);
+      return Post(path, (object)data);
     }
 
     public Response Post(string path, object data) {
-      return Post(path, data);
+      return Send(path, data, HttpVerbs.Post);
     }
 
     public static NameValueCollection ConvertFromObject(object anonymous) {

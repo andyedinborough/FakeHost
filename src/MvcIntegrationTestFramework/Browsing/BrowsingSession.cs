@@ -15,36 +15,22 @@ namespace MvcIntegrationTestFramework.Browsing {
       Cookies = new HttpCookieCollection();
     }
 
-    public RequestResult ProcessRequest(string url) {
-      return ProcessRequest(url, HttpVerbs.Get, null);
+    public RequestResult ProcessRequest(Uri uri) {
+      return ProcessRequest(uri, HttpVerbs.Get, null);
     }
 
-    public RequestResult ProcessRequest(string url, HttpVerbs httpVerb, NameValueCollection formValues) {
-      return ProcessRequest(url, httpVerb, formValues, null);
+    public RequestResult ProcessRequest(Uri uri, HttpVerbs httpVerb, NameValueCollection formValues) {
+      return ProcessRequest(uri, httpVerb, formValues, null);
     }
 
-    public RequestResult ProcessRequest(string url, HttpVerbs httpVerb, NameValueCollection formValues, NameValueCollection headers) {
-      if (url == null) throw new ArgumentNullException("url");
-
-      // Fix up URLs that incorrectly start with / or ~/
-      if (url.StartsWith("~/"))
-        url = url.Substring(2);
-      else if (url.StartsWith("/"))
-        url = url.Substring(1);
-
-      // Parse out the querystring if provided
-      string query = "";
-      int querySeparatorIndex = url.IndexOf("?");
-      if (querySeparatorIndex >= 0) {
-        query = url.Substring(querySeparatorIndex + 1);
-        url = url.Substring(0, querySeparatorIndex);
-      }
-
+    public RequestResult ProcessRequest(Uri uri, HttpVerbs httpVerb, NameValueCollection formValues, NameValueCollection headers) {
+      if (uri == null) throw new ArgumentNullException("url");
+       
       // Perform the request
       LastRequestData.Reset();
       var output = new StringWriter();
       string httpVerbName = httpVerb.ToString().ToLower();
-      var workerRequest = new SimulatedWorkerRequest(url, query, output, Cookies, httpVerbName, formValues, headers);
+      var workerRequest = new SimulatedWorkerRequest(uri, output, Cookies, httpVerbName, formValues, headers);
       HttpRuntime.ProcessRequest(workerRequest);
 
       // Capture the output
