@@ -114,11 +114,15 @@ namespace FakeHost {
             response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
 
             var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
-            var _customHeaders = GetPrivateInstanceField<System.Collections.ArrayList>(result.Response, "_customHeaders");
-            foreach (var hdr in _customHeaders) {
-              var name = GetPrivateInstanceProperty<string>(hdr, "Name");
-              var value = GetPrivateInstanceProperty<string>(hdr, "Value");
-              query[name] = value;
+            var _customHeaders = GetPrivateInstanceField<object>(result.Response, "_customHeaders") as System.Collections.ArrayList
+              ?? GetPrivateInstanceField<object>(result.Response, "_headers") as System.Collections.ArrayList;
+
+            if (_customHeaders != null) {
+              foreach (var hdr in _customHeaders) {
+                var name = GetPrivateInstanceProperty<string>(hdr, "Name");
+                var value = GetPrivateInstanceProperty<string>(hdr, "Value");
+                query[name] = value;
+              }
             }
 
             response.RawHeaders = query.ToString();
