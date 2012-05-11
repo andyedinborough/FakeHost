@@ -94,13 +94,13 @@ namespace MvcIntegrationTestFramework {
       }
 
       var cookies = SerializableCookie.GetCookies(Cookies);
-      url =  new Uri(new Uri("http://" + (Host ?? "localhost")), url).ToString();
+      var uri = new Uri(new Uri("http://" + (Host ?? "localhost")), url);
 
       lock (@lock)
         _appHost.SimulateBrowsingSession(browser => {
           SerializableCookie.Update(browser.Cookies, cookies);
 
-          var result = browser.ProcessRequest(new Uri(url), method, formNameValueCollection, headerCollection);
+          var result = browser.ProcessRequest(uri, method, formNameValueCollection, headerCollection);
           response.StatusCode = result.Response.StatusCode;
           response.ResponseText = result.ResponseText;
           response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
