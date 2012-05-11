@@ -14,6 +14,8 @@ namespace FakeHost {
 
     public Browser(string pathToYourWebProject = null, string virtualPath = null) {
       Cookies = new HttpCookieCollection();
+      AllowAutoRedirect = true;
+      MaximumAutomaticRedirections = 15;
       InitializeAspNetRuntime(pathToYourWebProject, virtualPath);
     }
 
@@ -59,7 +61,10 @@ namespace FakeHost {
       get { return _Headers; }
     }
 
+    public static string DefaultHost { get; set; }
     public string Host { get; set; }
+    public bool AllowAutoRedirect { get; set; }
+    public int MaximumAutomaticRedirections { get; set; }
 
     public void AppendHeader(string name, string value) {
       Headers.Add(name, value);
@@ -94,30 +99,41 @@ namespace FakeHost {
       }
 
       var cookies = SerializableCookie.GetCookies(Cookies);
-      var uri = new Uri(new Uri("http://" + (Host ?? "localhost")), url);
+      var host = (Host ?? DefaultHost ?? "localhost");
+      var temp = new Uri(new Uri("http://" + host), url);
+      Uri uri;
+      var numRedirects = 0;
+      do {
+        lock (@lock)
+          _appHost.SimulateBrowsingSession(browser => {
+            SerializableCookie.Update(browser.Cookies, cookies);
 
-      lock (@lock)
-        _appHost.SimulateBrowsingSession(browser => {
-          SerializableCookie.Update(browser.Cookies, cookies);
+            var result = browser.ProcessRequest(temp, method, formNameValueCollection, headerCollection);
+            response.StatusCode = result.Response.StatusCode;
+            response.ResponseText = result.ResponseText;
+            response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
 
-          var result = browser.ProcessRequest(uri, method, formNameValueCollection, headerCollection);
-          response.StatusCode = result.Response.StatusCode;
-          response.ResponseText = result.ResponseText;
-          response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
+            var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
+            var _customHeaders = GetPrivateInstanceField<System.Collections.ArrayList>(result.Response, "_customHeaders");
+            foreach (var hdr in _customHeaders) {
+              var name = GetPrivateInstanceProperty<string>(hdr, "Name");
+              var value = GetPrivateInstanceProperty<string>(hdr, "Value");
+              query[name] = value;
+            }
 
-          var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
-          var _customHeaders = GetPrivateInstanceField<System.Collections.ArrayList>(result.Response, "_customHeaders");
-          foreach (var hdr in _customHeaders) {
-            var name = GetPrivateInstanceProperty<string>(hdr, "Name");
-            var value = GetPrivateInstanceProperty<string>(hdr, "Value");
-            query[name] = value;
-          }
+            response.RawHeaders = query.ToString();
+          });
+        SerializableCookie.Update(Cookies, response._SerializableCookies);
+        uri = temp;
 
-          response.RawHeaders = query.ToString();
-        });
+      } while (
+          AllowAutoRedirect
+          && !string.IsNullOrEmpty(response.Headers["Location"])
+          && (numRedirects++ < MaximumAutomaticRedirections)
+          && (temp = new Uri(uri, response.Headers["Location"])).Host.Equals(host, StringComparison.InvariantCultureIgnoreCase)
+        );
 
-      SerializableCookie.Update(Cookies, response._SerializableCookies);
-
+      response.Url = uri;
       return response;
     }
 
@@ -141,6 +157,9 @@ namespace FakeHost {
     public Response Post(string path, XHTMLr.Form data) {
       return Post(path, (object)data);
     }
+    public Response Post(XHTMLr.Form data) {
+      return Post(data.Action, (object)data);
+    }
 
     public Response Post(string path, object data) {
       return Send(path, data, HttpVerbs.Post);
@@ -149,8 +168,16 @@ namespace FakeHost {
     public static NameValueCollection ConvertFromObject(object anonymous) {
       if (anonymous == null) return null;
       if (anonymous is string) return System.Web.HttpUtility.ParseQueryString(anonymous as string);
-      if (anonymous is NameValueCollection) return anonymous as NameValueCollection;
       var form = new NameValueCollection();
+
+      if (anonymous is NameValueCollection) {
+        //make a copy to ensure we have a class that is serializable
+        var other = anonymous as NameValueCollection;
+        foreach (var key in other.AllKeys)
+          form[key] = other[key];
+        return form;
+      }
+
       var dict = new RouteValueDictionary(anonymous);
 
       foreach (var kvp in dict) {

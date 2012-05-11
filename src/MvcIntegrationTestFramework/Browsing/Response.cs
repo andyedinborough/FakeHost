@@ -10,6 +10,7 @@ namespace FakeHost.Browsing {
   public class Response : MarshalByRefObject {
     public int StatusCode { get; set; }
     public string ResponseText { get; set; }
+    public Uri Url { get; set; }
 
     internal SerializableCookie[] _SerializableCookies { get; set; }
 
@@ -48,7 +49,15 @@ namespace FakeHost.Browsing {
     }
 
     public XHTMLr.Form[] GetForms() {
-      return XHTMLr.Form.GetForms(ResponseXml);
+      var forms = XHTMLr.Form.GetForms(ResponseXml);
+      foreach (var form in forms) {
+        var action = form.Action;
+        if (string.IsNullOrEmpty(action))
+          action = Url.ToString();
+        var uri = new Uri(Url, action);
+        form.Action = uri.ToString();
+      }
+      return forms;
     }
   }
 }

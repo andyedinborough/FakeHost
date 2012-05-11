@@ -2,7 +2,7 @@ $name = "FakeHost";
 function create-nuspec() {    
     $spec = get-text "$name.nuspec"
     $spec = $spec.Replace("#version#", (get-version("bin\release\$name.dll")))
-    $spec = $spec.Replace("#message#", (get-text(".git\COMMIT_EDITMSG")))
+    $spec = $spec.Replace("#message#", (get-text("..\..\.git\COMMIT_EDITMSG")))
     
     $spec | out-file "bin\Package\$name.nuspec"
 }
@@ -18,6 +18,8 @@ function get-version($file) {
 
 del "bin\Package" -recurse
 md "bin\Package\lib\net40" 
-copy "bin\Release\*.*" "bin\Package\lib\net40"
+copy "bin\Release\$name.dll" "bin\Package\lib\net40"
+copy "bin\Release\$name.pdb" "bin\Package\lib\net40"
 create-nuspec
-.nuget\NuGet.exe pack "bin\Package\$name.nuspec" /o "bin\Package"
+..\..\.nuget\NuGet.exe pack "bin\Package\$name.nuspec" /o "bin\Package"
+read-host
