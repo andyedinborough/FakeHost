@@ -10,14 +10,13 @@ namespace FakeHost {
   public class Browser : IDisposable {
     private static object @lock = new object();
     private static AppHost _appHost;
-    private Uri _BaseUri;
+    private static Uri _BaseUri;
 
     public Browser(string pathToYourWebProject = null, Uri baseUri = null) {
       Cookies = new HttpCookieCollection();
       AllowAutoRedirect = true;
       MaximumAutomaticRedirections = 15;
-      _BaseUri = baseUri ?? new Uri("http://localhost/");
-      InitializeAspNetRuntime(pathToYourWebProject, _BaseUri.AbsolutePath);
+      InitializeAspNetRuntime(pathToYourWebProject, _BaseUri);
     }
 
     /// <summary>
@@ -31,10 +30,11 @@ namespace FakeHost {
     /// <remarks>
     /// Has been known to cause severe damage to your immortal soul.
     /// </remarks>
-    public static void InitializeAspNetRuntime(string pathToYourWebProject = null, string virtualPath = null) {
+    public static void InitializeAspNetRuntime(string pathToYourWebProject = null, Uri baseUri = null) {
       if (_appHost == null)
         lock (@lock)
           if (_appHost == null) {
+            _BaseUri = baseUri ?? new Uri("http://localhost/");
             if (pathToYourWebProject == null) {
               var guessDirectory = new DirectoryInfo(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..")));
               var projectDirs = guessDirectory.GetDirectories();
@@ -50,7 +50,7 @@ namespace FakeHost {
             var ourDll1 = Path.Combine(pathToYourWebProject, "bin", System.IO.Path.GetFileName(ourDll0));
             File.Copy(ourDll0, ourDll1, true);
 
-            _appHost = new AppHost(pathToYourWebProject, virtualPath ?? "/");
+            _appHost = new AppHost(pathToYourWebProject, _BaseUri.AbsolutePath);
           }
     }
 
@@ -151,7 +151,7 @@ namespace FakeHost {
     /// Execute code in the ASP.NET AppDomain
     /// </summary>
     /// <param name="action"></param>
-    public void Execute(Action action) {
+    public static void Execute(Action action) {
       _appHost.Execute(action);
     }
 
