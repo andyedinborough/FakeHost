@@ -10,6 +10,7 @@ namespace FakeHost {
   public class Browser : IDisposable {
     private static object @lock = new object();
     private static AppHost _appHost;
+    private static string _WebDirectory;
     private static Uri _BaseUri;
 
     public Browser(string pathToYourWebProject = null, Uri baseUri = null) {
@@ -46,12 +47,23 @@ namespace FakeHost {
               }
             }
 
-            var ourDll0 = new Uri(typeof(FakeHost.Browser).Assembly.Location).LocalPath;
-            var ourDll1 = Path.Combine(pathToYourWebProject, "bin", System.IO.Path.GetFileName(ourDll0));
-            File.Copy(ourDll0, ourDll1, true);
-
+            _WebDirectory = pathToYourWebProject;
+            AddReference(typeof(FakeHost.Browser));
+            AddReference(System.Reflection.Assembly.GetEntryAssembly());
+            AddReference(System.Reflection.Assembly.GetCallingAssembly());
             _appHost = new AppHost(pathToYourWebProject, _BaseUri.AbsolutePath);
           }
+    }
+
+    private static void AddReference(Type type) {
+      if (type == null) return;
+      AddReference(type.Assembly);
+    }
+    private static void AddReference(System.Reflection.Assembly assy) {
+      if (assy == null) return;
+      var ourDll0 = new Uri(assy.Location).LocalPath;
+      var ourDll1 = Path.Combine(_WebDirectory, "bin", System.IO.Path.GetFileName(ourDll0));
+      File.Copy(ourDll0, ourDll1, true);
     }
 
     public HttpCookieCollection Cookies { get; internal set; }

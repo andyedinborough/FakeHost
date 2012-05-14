@@ -36,7 +36,7 @@ namespace FakeHost.Hosting {
 
     public void Execute(Action action) {
       var serializableDelegate = new SerializableDelegate<Action>(action);
-      appDomainProxy.RunCodeInAppDomain(action);
+      appDomainProxy.RunCodeInAppDomain(serializableDelegate);
     }
 
     #region Initializing app & interceptors

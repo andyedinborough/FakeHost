@@ -10,6 +10,10 @@ namespace FakeHost.Hosting {
       codeToRun();
     }
 
+    public void RunCodeInAppDomain(SerializableDelegate<Action> script) {
+      script.Delegate();
+    }
+
     public void RunBrowsingSessionInAppDomain(SerializableDelegate<Action<BrowsingSession>> script) {
       var browsingSession = new BrowsingSession();
       script.Delegate(browsingSession);
