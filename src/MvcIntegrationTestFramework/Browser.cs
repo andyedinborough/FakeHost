@@ -2,7 +2,6 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
-using System.Web.Mvc;
 using System.Web.Routing;
 using FakeHost.Browsing;
 using FakeHost.Hosting;
@@ -11,12 +10,14 @@ namespace FakeHost {
   public class Browser : IDisposable {
     private static object @lock = new object();
     private static AppHost _appHost;
+    private Uri _BaseUri;
 
-    public Browser(string pathToYourWebProject = null, string virtualPath = null) {
+    public Browser(string pathToYourWebProject = null, Uri baseUri = null) {
       Cookies = new HttpCookieCollection();
       AllowAutoRedirect = true;
       MaximumAutomaticRedirections = 15;
-      InitializeAspNetRuntime(pathToYourWebProject, virtualPath);
+      _BaseUri = baseUri ?? new Uri("http://localhost/");
+      InitializeAspNetRuntime(pathToYourWebProject, _BaseUri.AbsolutePath);
     }
 
     /// <summary>
@@ -61,8 +62,6 @@ namespace FakeHost {
       get { return _Headers; }
     }
 
-    public static string DefaultHost { get; set; }
-    public string Host { get; set; }
     public bool AllowAutoRedirect { get; set; }
     public int MaximumAutomaticRedirections { get; set; }
 
@@ -90,7 +89,7 @@ namespace FakeHost {
     /// });
     /// </code>
     /// </example>
-    protected Response Send(string url, object formData = null, HttpVerbs method = HttpVerbs.Get) {
+    protected Response Send(string url, object formData = null, string method = "GET") {
       var response = new Response();
       var formNameValueCollection = formData == null ? null : ConvertFromObject(formData);
       var headerCollection = System.Web.HttpUtility.ParseQueryString(string.Empty);
@@ -98,17 +97,16 @@ namespace FakeHost {
         headerCollection[header] = Headers[header];
       }
 
-      var cookies = SerializableCookie.GetCookies(Cookies);
-      var host = (Host ?? DefaultHost ?? "localhost");
-      var temp = new Uri(new Uri("http://" + host), url);
+      var temp = new Uri(_BaseUri, url);
       Uri uri;
       var numRedirects = 0;
       do {
+        var cookies = SerializableCookie.GetCookies(Cookies);
         lock (@lock)
           _appHost.SimulateBrowsingSession(browser => {
             SerializableCookie.Update(browser.Cookies, cookies);
 
-            var result = browser.ProcessRequest(temp, method, formNameValueCollection, headerCollection);
+            var result = browser.ProcessRequest(temp, numRedirects > 0 ? "GET" : method, formNameValueCollection, headerCollection);
             response.StatusCode = result.Response.StatusCode;
             response.ResponseText = result.ResponseText;
             response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
@@ -129,20 +127,32 @@ namespace FakeHost {
               query["Location"] = result.Response.RedirectLocation;
             }
 
+            if (response.StatusCode == 200 && !string.IsNullOrEmpty(query["Location"]))
+              response.StatusCode = 302;
+
             response.RawHeaders = query.ToString();
           });
         SerializableCookie.Update(Cookies, response._SerializableCookies);
         uri = temp;
+        response._Headers = null;
 
       } while (
           AllowAutoRedirect
           && !string.IsNullOrEmpty(response.Headers["Location"])
           && (numRedirects++ < MaximumAutomaticRedirections)
-          && (temp = new Uri(uri, response.Headers["Location"])).Host.Equals(host, StringComparison.InvariantCultureIgnoreCase)
+          && (temp = new Uri(uri, response.Headers["Location"])).Host.Equals(_BaseUri.Host, StringComparison.InvariantCultureIgnoreCase)
         );
 
       response.Url = uri;
       return response;
+    }
+
+    /// <summary>
+    /// Execute code in the ASP.NET AppDomain
+    /// </summary>
+    /// <param name="action"></param>
+    public void Execute(Action action) {
+      _appHost.Execute(action);
     }
 
     private static T GetPrivateInstanceField<T>(object obj, string name) {
@@ -170,7 +180,7 @@ namespace FakeHost {
     }
 
     public Response Post(string path, object data) {
-      return Send(path, data, HttpVerbs.Post);
+      return Send(path, data, "POST");
     }
 
     internal static NameValueCollection ConvertFromObject(object anonymous) {

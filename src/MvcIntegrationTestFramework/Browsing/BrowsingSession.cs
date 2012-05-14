@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
-using System.Web.Mvc;
 using System.Web.SessionState;
 using FakeHost.Interception;
 
@@ -15,17 +14,6 @@ namespace FakeHost.Browsing {
       Cookies = new HttpCookieCollection();
     }
 
-    public RequestResult ProcessRequest(Uri uri) {
-      return ProcessRequest(uri, HttpVerbs.Get, null);
-    }
-
-    public RequestResult ProcessRequest(Uri uri, HttpVerbs httpVerb, NameValueCollection formValues) {
-      return ProcessRequest(uri, httpVerb, formValues, null);
-    }
-
-    public RequestResult ProcessRequest(Uri uri, HttpVerbs httpVerb, NameValueCollection formValues, NameValueCollection headers) {
-      return ProcessRequest(uri, httpVerb.ToString(), formValues, headers);
-    }
     public RequestResult ProcessRequest(Uri uri, string httpVerb, NameValueCollection formValues, NameValueCollection headers) {
       if (uri == null) throw new ArgumentNullException("url");
 
@@ -50,7 +38,6 @@ namespace FakeHost.Browsing {
     }
 
     private void AddAnyNewCookiesToCookieCollection(HttpResponse response) {
-      response = LastRequestData.Response ?? response;
       if (response == null) return;
 
       var lastResponseCookies = response.Cookies;

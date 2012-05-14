@@ -34,6 +34,10 @@ namespace FakeHost.Hosting {
       appDomainProxy.RunBrowsingSessionInAppDomain(serializableDelegate);
     }
 
+    public void Execute(Action action) {
+      appDomainProxy.RunCodeInAppDomain(action);
+    }
+
     #region Initializing app & interceptors
     private static void InitializeApplication() {
       var appInstance = GetApplicationInstance();

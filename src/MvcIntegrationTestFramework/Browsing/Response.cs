@@ -27,7 +27,7 @@ namespace FakeHost.Browsing {
     }
 
     [NonSerialized]
-    private WebHeaderCollection _Headers;
+    internal WebHeaderCollection _Headers;
     public WebHeaderCollection Headers {
       get {
         if (_Headers == null) {
