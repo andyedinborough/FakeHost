@@ -125,6 +125,10 @@ namespace FakeHost {
               }
             }
 
+            if (!string.IsNullOrEmpty(result.Response.RedirectLocation)) {
+              query["Location"] = result.Response.RedirectLocation;
+            }
+
             response.RawHeaders = query.ToString();
           });
         SerializableCookie.Update(Cookies, response._SerializableCookies);
@@ -169,7 +173,7 @@ namespace FakeHost {
       return Send(path, data, HttpVerbs.Post);
     }
 
-    public static NameValueCollection ConvertFromObject(object anonymous) {
+    internal static NameValueCollection ConvertFromObject(object anonymous) {
       if (anonymous == null) return null;
       if (anonymous is string) return System.Web.HttpUtility.ParseQueryString(anonymous as string);
       var form = new NameValueCollection();

@@ -36,7 +36,7 @@ namespace FakeHost.Browsing {
       var workerRequest = new SimulatedWorkerRequest(uri, output, Cookies, httpVerb, formValues, headers);
       var ctx = HttpContext.Current = new HttpContext(workerRequest);
       HttpRuntime.ProcessRequest(workerRequest);
-      var response = ctx.Response;
+      var response = LastRequestData.Response ?? ctx.Response;
 
       // Capture the output
       AddAnyNewCookiesToCookieCollection(response);
@@ -45,7 +45,7 @@ namespace FakeHost.Browsing {
         ResponseText = output.ToString(),
         ActionExecutedContext = LastRequestData.ActionExecutedContext,
         ResultExecutedContext = LastRequestData.ResultExecutedContext,
-        Response = response ?? LastRequestData.Response,
+        Response = response,
       };
     }
 
