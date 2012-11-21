@@ -85,7 +85,7 @@ namespace FakeHost {
 		/// Sends a post to your url.  
 		/// </summary>
 		/// <param name="url"></param>
-		/// <param name="formData"></param>
+		/// <param name="requestData"></param>
 		/// <example>
 		/// <code>
 		/// Post("registration/create", new
@@ -101,13 +101,14 @@ namespace FakeHost {
 		/// });
 		/// </code>
 		/// </example>
-		protected Response Send(string url, object formData = null, string method = "GET") {
+		protected Response Send(string url, string requestData = null, string method = "GET", string contentType = null) {
 			var response = new Response();
-			var formNameValueCollection = formData == null ? null : ConvertFromObject(formData);
 			var headerCollection = System.Web.HttpUtility.ParseQueryString(string.Empty);
 			foreach (string header in Headers) {
 				headerCollection[header] = Headers[header];
 			}
+			if (contentType != null)
+				headerCollection["Content-Type"] = contentType;
 
 			var temp = new Uri(_BaseUri, url);
 			Uri uri;
@@ -118,7 +119,7 @@ namespace FakeHost {
 					_appHost.SimulateBrowsingSession(browser => {
 						SerializableCookie.Update(browser.Cookies, cookies);
 
-						var result = browser.ProcessRequest(temp, numRedirects > 0 ? "GET" : method, formNameValueCollection, headerCollection);
+						var result = browser.ProcessRequest(temp, numRedirects > 0 ? "GET" : method, requestData, headerCollection);
 						response.StatusCode = result.Response.StatusCode;
 						response.ResponseText = result.ResponseText;
 						response._SerializableCookies = SerializableCookie.GetCookies(browser.Cookies);
@@ -180,35 +181,38 @@ namespace FakeHost {
 			return Send(path);
 		}
 
+		public Response Post(string path, object data) {
+			return Post(path, ConvertFromObject(data));
+		}
+
 		public Response Post(string path, NameValueCollection data) {
-			return Post(path, (object)data);
+			return Post(path, ConvertFromObject(data));
 		}
 
 		public Response Post(string path, XHTMLr.Form data) {
-			return Post(path, (object)data);
+			return Post(path, data.ToString(), data.EncType);
 		}
-		public Response Post(string path) {
-			return Post(path, (XHTMLr.Form)null);
-		}
+
 		public Response Post(XHTMLr.Form data) {
-			return Post(data.Action, (object)data);
+			return Post(data.Action, data.ToString(), data.EncType);
 		}
 
-		public Response Post(string path, object data) {
-			return Send(path, data, "POST");
+		public Response Post(string path, string data = null, string contentType = "application/x-www-form-urlencoded") {
+			return Send(path, data, "POST", contentType);
 		}
 
-		internal static NameValueCollection ConvertFromObject(object anonymous) {
+		internal static string ConvertFromObject(object anonymous) {
 			if (anonymous == null) return null;
-			if (anonymous is string) return System.Web.HttpUtility.ParseQueryString(anonymous as string);
-			var form = new NameValueCollection();
+			if (anonymous is string) return anonymous as string;
+
+			var form = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
 			if (anonymous is NameValueCollection) {
 				//make a copy to ensure we have a class that is serializable
 				var other = anonymous as NameValueCollection;
 				foreach (var key in other.AllKeys)
 					form[key] = other[key];
-				return form;
+				return form.ToString();
 			}
 
 			var dict = new RouteValueDictionary(anonymous);
@@ -223,7 +227,8 @@ namespace FakeHost {
 					form.Add(kvp.Key, kvp.Value.ToString());
 				}
 			}
-			return form;
+
+			return form.ToString();
 		}
 
 		public void Dispose() {
