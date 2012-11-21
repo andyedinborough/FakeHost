@@ -57,7 +57,7 @@ namespace FakeHost.Browsing {
 		}
 
 		public override byte[] GetPreloadedEntityBody() {
-			if (_FormValues == null)
+			if (_FormValues != null)
 				return Encoding.UTF8.GetBytes(_FormValues);
 			else return base.GetPreloadedEntityBody();
 		}
