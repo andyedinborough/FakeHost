@@ -76,7 +76,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="XHTMLr">
-      <HintPath>..\..\packages\XHTMLr.1.0.5.2\lib\net40\XHTMLr.dll</HintPath>
+      <HintPath>..\..\packages\XHTMLr.1.0.5.5\lib\net40\XHTMLr.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
