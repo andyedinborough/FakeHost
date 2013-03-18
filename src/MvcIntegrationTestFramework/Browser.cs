@@ -3,6 +3,7 @@ using FakeHost.Hosting;
 using System;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Routing;
 
@@ -48,18 +49,37 @@ namespace FakeHost {
 						}
 
 						_WebDirectory = pathToYourWebProject;
-						AddReference(typeof(FakeHost.Browser));
-						AddReference(System.Reflection.Assembly.GetEntryAssembly());
-						AddReference(System.Reflection.Assembly.GetCallingAssembly());
+						var me = typeof(FakeHost.Browser).Assembly;
+						CopyReference(me);
 						_appHost = new AppHost(pathToYourWebProject, _BaseUri.AbsolutePath);
+
+						var assys = new[]{
+							System.Reflection.Assembly.GetExecutingAssembly(),
+							System.Reflection.Assembly.GetEntryAssembly(),
+							System.Reflection.Assembly.GetCallingAssembly(),
+							typeof(FakeHost.Browser).Assembly
+						}
+						.Union(
+							 new System.Diagnostics.StackTrace().GetFrames().Select(x => x.GetMethod().DeclaringType.Assembly)
+						 )
+						 .Distinct()
+						 .ToArray();
+
+						var files = assys
+							.Where(x => x != null && x != me)
+							.Select(x => new Uri(x.Location).LocalPath)
+							.Distinct()
+							.Where(x => x.IndexOf("\\Microsoft.NET\\", StringComparison.OrdinalIgnoreCase) == -1)
+							.Where(x => x.IndexOf("\\Common7\\", StringComparison.OrdinalIgnoreCase) == -1)
+							.ToArray();
+
+						foreach (var file in files)
+							_appHost.Execute(() => System.Reflection.Assembly.LoadFile(file));
+
 					}
 		}
 
-		private static void AddReference(Type type) {
-			if (type == null) return;
-			AddReference(type.Assembly);
-		}
-		private static void AddReference(System.Reflection.Assembly assy) {
+		private static void CopyReference(System.Reflection.Assembly assy) {
 			if (assy == null) return;
 			var ourDll0 = new Uri(assy.Location).LocalPath;
 			var ourDll1 = Path.Combine(_WebDirectory, "bin", System.IO.Path.GetFileName(ourDll0));
