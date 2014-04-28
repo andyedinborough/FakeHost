@@ -62,7 +62,11 @@ namespace FakeHost.Browsing {
 			else return base.GetPreloadedEntityBody();
 		}
 
-		private string MakeCookieHeader() {
+	    public override bool IsSecure() {
+	        return this._Uri.Scheme == "https";
+	    }
+
+	    private string MakeCookieHeader() {
 			if ((_Cookies == null) || (_Cookies.Count == 0))
 				return null;
 			var sb = new StringBuilder();
