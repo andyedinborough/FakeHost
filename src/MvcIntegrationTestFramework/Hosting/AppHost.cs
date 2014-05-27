@@ -11,7 +11,7 @@ namespace FakeHost.Hosting {
   /// Hosts an ASP.NET application within an ASP.NET-enabled .NET appdomain
   /// and provides methods for executing test code within that appdomain
   /// </summary>
-  internal class AppHost {
+  internal class AppHost : IDisposable {
     private readonly AppDomainProxy appDomainProxy; // The gateway to the ASP.NET-enabled .NET appdomain
 
     public AppHost(string appPhysicalDirectory)
@@ -87,5 +87,10 @@ namespace FakeHost.Hosting {
     }
 
     #endregion
+
+    public void Dispose()
+    {
+      appDomainProxy.Dispose();
+    }
   }
 }

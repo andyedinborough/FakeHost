@@ -231,8 +231,8 @@ namespace FakeHost {
 			return form.ToString();
 		}
 
-		public void Dispose() {
-			//for future use
-		}
+        public void Dispose() {
+            _appHost.Dispose();
+        }
 	}
 }
